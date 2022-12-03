@@ -19,7 +19,4 @@ public class Site  {
     private Integer csCount=0;
     private Integer pubgCount=0;
 
-
-
-
 }

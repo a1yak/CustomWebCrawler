@@ -1,6 +1,7 @@
 package com.example.crawler.controller;
 
 import com.example.crawler.model.Site;
+import com.example.crawler.repo.CrawlerRepository;
 import com.example.crawler.service.CrawlerService;
 import jakarta.servlet.ServletContext;
 
@@ -13,6 +14,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +37,11 @@ class CrawlerControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    @MockBean
+    private CrawlerService service;
+
 
     @Autowired
     private WebApplicationContext webApplicationContext;
