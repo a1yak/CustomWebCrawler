@@ -14,9 +14,7 @@ public class Site  {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String URL;
-    private Integer dotaCount=0;
-    private Integer valorantCount=0;
-    private Integer csCount=0;
-    private Integer pubgCount=0;
+    private String searchedWord;
+    private Integer searchedWordCount = 0;
 
 }
