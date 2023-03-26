@@ -10,12 +10,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockServletContext;
@@ -29,40 +33,50 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(CrawlerController.class)
 class CrawlerControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    @MockBean
-    private CrawlerService service;
-
-
-    @Autowired
-    private WebApplicationContext webApplicationContext;
-
-    @BeforeEach
-    public void setup() throws Exception {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext).build();
-    }
+    @InjectMocks
+    private CrawlerController crawlerController;
+    @Mock
+    private CrawlerService crawlerService;
 
     @Test
-    public void givenWac_whenServletContext_thenItProvidesGreetController() {
-        ServletContext servletContext = webApplicationContext.getServletContext();
+    public void testStartCrawlerWithValidParameters() {
+        // Arrange
+        MockitoAnnotations.openMocks(this);
+        String url = "https://example.com";
+        String searchedWord = "example";
+        List<Site> expectedSites = new ArrayList<>();
+        Site site1 = new Site();
+        site1.setURL("https://example.com/page1");
+        site1.setSearchedWord("example");
+        Site site2 = new Site();
+        site2.setURL("https://example.com/page1");
+        site2.setSearchedWord("ex");
+        expectedSites.add(site1);
+        expectedSites.add(site2);
 
-        Assertions.assertNotNull(servletContext);
-        Assertions.assertTrue(servletContext instanceof MockServletContext);
-        Assertions.assertNotNull(webApplicationContext.getBean("crawlerController"));
-    }
-    @Test
-    void startCrawlerShouldReturnOk() throws Exception {
+        CrawlerController controller = new CrawlerController();
 
-        this.mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/crawler?url=https://liquipedia.net/dota2/Alliance")).andExpect(status().isOk());
+        when(crawlerService.crawl(url, searchedWord, 1)).thenReturn(expectedSites);
+        // Act
+        ResponseEntity<List<Site>> response = controller.startCrawler(url, searchedWord);
+        List<Site> sites = response.getBody();
 
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(sites);
+        assertTrue(sites.size() > 0);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expectedSites, sites);
     }
 }
