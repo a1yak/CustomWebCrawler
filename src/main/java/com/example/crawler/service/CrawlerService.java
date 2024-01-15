@@ -37,7 +37,7 @@ public class CrawlerService {
                 for(Element link : document.select("a[href]")){
 
                          String n_link = link.absUrl("href");
-                    if(visited.contains(n_link)==false && visited.size()<=10000){
+                    if(!visited.contains(n_link) && visited.size()<=10000){
 
                         crawl(n_link, word, ++level);
 
@@ -62,7 +62,7 @@ public class CrawlerService {
     public Document request(String url, String word){
         try{
             Site site = new Site();
-            site.setURL(url);
+            site.setUrl(url);
             site.setSearchedWord(word);
             Connection con = Jsoup.connect(url);
             Document document = con.get();

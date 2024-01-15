@@ -50,7 +50,7 @@ class CrawlerControllerIntegrationTest {
         );
 
         // Assert
-        assertEquals(response.getStatusCode(),HttpStatus.OK);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }
 
@@ -74,7 +74,7 @@ class CrawlerControllerIntegrationTest {
         );
 
         // Assert
-        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertTrue(response.getBody().size() > 5);
 
