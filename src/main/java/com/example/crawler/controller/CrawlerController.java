@@ -17,8 +17,8 @@ public class CrawlerController {
     private CrawlerService crawlerService;
 
     @GetMapping
-    public ResponseEntity<List<Site>> startCrawler(@RequestParam String url){
-       return new ResponseEntity<>(crawlerService.crawl(url, 1), HttpStatus.OK);
+    public ResponseEntity<List<Site>> startCrawler(@RequestParam String url, @RequestParam String searchedWord){
+       return new ResponseEntity<>(crawlerService.crawl(url, searchedWord, 1), HttpStatus.OK);
     }
 
     @GetMapping("/top")

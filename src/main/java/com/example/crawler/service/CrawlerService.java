@@ -2,6 +2,7 @@ package com.example.crawler.service;
 
 import com.example.crawler.model.Site;
 import com.example.crawler.repo.CrawlerRepository;
+import lombok.Data;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,6 +15,7 @@ import java.io.*;
 import java.util.*;
 
 @Service
+@Data
 public class CrawlerService {
 
     @Autowired
@@ -25,10 +27,10 @@ public class CrawlerService {
     private ArrayList<Site> visited = new ArrayList<>();
     private ArrayList<Site> top10 = new ArrayList<>();
 
-    public List<Site> crawl( String url, int level){
+    public List<Site> crawl( String url, String word, int level){
 
         if(level<=8){
-            Document document = request(url);
+            Document document = request(url, word);
 
             if(document!=null){
 
@@ -37,7 +39,7 @@ public class CrawlerService {
                          String n_link = link.absUrl("href");
                     if(visited.contains(n_link)==false && visited.size()<=10000){
 
-                        crawl(n_link, ++level);
+                        crawl(n_link, word, ++level);
 
                     }
                 }
@@ -48,12 +50,7 @@ public class CrawlerService {
 
 
     private void showStats(Site site){
-
-        System.out.println("Dota occurrences: "+ site.getDotaCount());
-        System.out.println("Valorant occurrences: "+ site.getValorantCount());
-        System.out.println("PUBG occurrences: "+ site.getPubgCount());
-        System.out.println("Counter-Strike occurrences: "+ site.getCsCount());
-
+        System.out.println(site.getSearchedWord()+" occurrences: "+ site.getSearchedWordCount());
     }
 
     private void writeToDb(Site site){
@@ -62,29 +59,19 @@ public class CrawlerService {
 
     }
 
-    private Document request(String url){
+    public Document request(String url, String word){
         try{
             Site site = new Site();
             site.setURL(url);
+            site.setSearchedWord(word);
             Connection con = Jsoup.connect(url);
             Document document = con.get();
 
-            for (Element word: document.getElementsMatchingOwnText("Dota"))
+            for (Element searchedWord: document.getElementsMatchingOwnText(word))
             {
-                site.setDotaCount(site.getDotaCount()+1);
+                site.setSearchedWordCount(site.getSearchedWordCount()+1);
             }
-            for (Element word: document.getElementsMatchingOwnText("Valorant"))
-            {
-                site.setValorantCount(site.getValorantCount()+1);
-            }
-            for (Element word: document.getElementsMatchingOwnText("PUBG"))
-            {
-                site.setPubgCount(site.getPubgCount()+1);
-            }
-            for (Element word: document.getElementsMatchingOwnText("Counter-Strike"))
-            {
-                site.setCsCount(site.getCsCount()+1);
-            }
+
             System.out.println("Link: " + url);
             System.out.println(document.title());
             showStats(site);
@@ -99,7 +86,7 @@ public class CrawlerService {
         }
     }
 
-    private void writeToFile(List<Site> list, File file) throws IOException {
+    public void writeToFile(List<Site> list, File file) throws IOException {
         PrintWriter writer = new PrintWriter(file);
         for(Site s : list){
             writer.println(s);
@@ -107,8 +94,8 @@ public class CrawlerService {
         writer.close();
     }
 
-    public List<Site> top10Hits()  {
-        Collections.sort(visited, (o1, o2) -> ((o2.getCsCount()+ o2.getDotaCount()+ o2.getPubgCount()+ o2.getValorantCount())-(o1.getValorantCount()+o1.getPubgCount()+o1.getDotaCount()+ o1.getCsCount())));
+    public List<Site> top10Hits() {
+        visited.sort(Comparator.comparingInt(Site::getSearchedWordCount));
 
        for(int count = 0; count<10; count++){
            top10.add(visited.get(count));
@@ -116,6 +103,7 @@ public class CrawlerService {
        try {
            writeToFile(top10, top);
        }catch (IOException exception){
+           System.out.println(exception.getMessage());
        }
 
        return top10;
